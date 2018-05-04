@@ -14,14 +14,16 @@ NiepanPlugin.prototype.apply = function(compiler) {
 
   compiler.plugin('emit', function(compilation, callback) {
     console.log('emit...')
-    console.log(compilation);
-    callback();
+    if(typeof callback === 'function'){
+      callback();
+    }
   }.bind(this));
 
   compiler.plugin('done', function(compilation, callback) {
     console.log('done...')
-    console.log(compilation);
-    callback();
+    if(typeof callback === 'function'){
+      callback();
+    }
   }.bind(this));
 };
 
