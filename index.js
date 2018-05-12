@@ -1,9 +1,9 @@
 /**
  * NiepanPlugin depends on html-webpack-plugin
  */
-// function CONSOLEKEYS(o){
-//   console.log(Object.keys(o).join(","))
-// }
+function CONSOLEKEYS(o){
+  console.log(Object.keys(o).join(","))
+}
 
 class NiepanPlugin{
   constructor(options){
@@ -13,10 +13,11 @@ class NiepanPlugin{
   apply(compiler){
     // for webpack4
     if(compiler.hooks){
-      compiler.hooks.compilation.tap.bind(compiler.hooks.compilation, 'html-webpack-inline-source-plugin')(function (compilation) {
-        compilation.hooks.htmlWebpackPluginAlterAssetTags.tapAsync.bind(compilation.hooks.htmlWebpackPluginAlterAssetTags, 'html-webpack-inline-source-plugin')(
+      compiler.hooks.compilation.tap.bind(compiler.hooks.compilation, 'np-webpack-plugin')(function (compilation) {
+        // console.log('\ncompilation');
+        compilation.hooks.htmlWebpackPluginAlterAssetTags.tapAsync.bind(compilation.hooks.htmlWebpackPluginAlterAssetTags, 'np-webpack-plugin')(
           function (htmlPluginData, callback) {
-            console.log(htmlPluginData);
+            // console.log(htmlPluginData);
             var result = htmlPluginData;
             callback(null, result);
           }
@@ -28,9 +29,14 @@ class NiepanPlugin{
       // beforeCompile,compile,make,afterCompile,watchRun,failed,invalid,
       // watchClose,environment,afterEnvironment,afterPlugins,afterResolvers,
       // entryOption
-      compiler.hooks.emit.tapAsync.bind(compiler.hooks.emit, 'xyz')(function(compilation,callback){
-          // console.log('||||||||||||||||||||||||emit|||||||||||||||||||||')
-
+      compiler.hooks.emit.tapAsync.bind(compiler.hooks.emit, 'np-webpack-plugin')(function(compilation,callback){
+          // console.log('\nemit');
+          var source = compilation.assets['index.html'].source();
+          compilation.assets['index.html'].source = function(){
+            var npSource = source.replace(/<np.*?>(.*?)<\/np>/g,"this is niepan component");
+            // console.log(npSource)
+            return npSource;
+          }
           // CONSOLEKEYS(compilation);
           //
           // _pluginCompat,hooks,name,compiler,resolverFactory,inputFileSystem,
@@ -103,18 +109,55 @@ class NiepanPlugin{
     }
   }
 
-  // convertPluginData(compilation,pluginData){
-  //   var self = this;
-  //   var body = [];
-  //   var head = [];
-  //   pluginData.head.forEach(function (tag) {
-  //     head.push(self.processTag(compilation, tag));
-  //   });
-  //   pluginData.body.forEach(function (tag) {
-  //     body.push(self.processTag(compilation, tag));
-  //   });
-  //   return { head: head, body: body, plugin: pluginData.plugin, chunks: pluginData.chunks, outputName: pluginData.outputName };
-  // }
+// convertPluginData(compilation,pluginData){
+//   var self = this;
+//   var body = [];
+//   var head = [];
+//   pluginData.head.forEach(function (tag) {
+//     head.push(self.processTag(compilation, tag));
+//   });
+//   pluginData.body.forEach(function (tag) {
+//     body.push(self.processTag(compilation, tag));
+//   });
+//   return { head: head, body: body, plugin: pluginData.plugin, chunks: pluginData.chunks, outputName: pluginData.outputName };
+// }
+//   HtmlWebpackInlineSourcePlugin.prototype.processTag = function (compilation, regex, tag) {
+//   var assetUrl;
+//
+//   // inline js
+//   if (tag.tagName === 'script' && regex.test(tag.attributes.src)) {
+//     assetUrl = tag.attributes.src;
+//     tag = {
+//       tagName: 'script',
+//       closeTag: true,
+//       attributes: {
+//         type: 'text/javascript'
+//       }
+//     };
+//
+//   // inline css
+//   } else if (tag.tagName === 'link' && regex.test(tag.attributes.href)) {
+//     assetUrl = tag.attributes.href;
+//     tag = {
+//       tagName: 'style',
+//       closeTag: true,
+//       attributes: {
+//         type: 'text/css'
+//       }
+//     };
+//   }
+//
+//   if (assetUrl) {
+//     // Strip public URL prefix from asset URL to get Webpack asset name
+//     var publicUrlPrefix = compilation.outputOptions.publicPath || '';
+//     var assetName = path.posix.relative(publicUrlPrefix, assetUrl);
+//     var asset = compilation.assets[assetName];
+//     var updatedSource = this.resolveSourceMaps(compilation, assetName, asset);
+//     tag.innerHTML = (tag.tagName === 'script') ? updatedSource.replace(/(<)(\/script>)/g, '\\x3C$2') : updatedSource;
+//   }
+//
+//   return tag;
+// };
 }
 
 module.exports = NiepanPlugin;
