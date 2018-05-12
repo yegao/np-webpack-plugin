@@ -2,7 +2,7 @@
  * NiepanPlugin depends on html-webpack-plugin
  */
 function CONSOLEKEYS(o){
-  console.log(Object.keys(o).join(","))
+  console.log("\n"+Object.keys(o).join("\n"))
 }
 
 class NiepanPlugin{
@@ -11,48 +11,45 @@ class NiepanPlugin{
   }
 
   apply(compiler){
-    // for webpack4
+    // compiler.hooks有这些钩子
+    // shouldEmit,done,additionalPass,beforeRun,run,emit,afterEmit,
+    // thisCompilation,compilation,normalModuleFactory,contextModuleFactory,
+    // beforeCompile,compile,make,afterCompile,watchRun,failed,invalid,
+    // watchClose,environment,afterEnvironment,afterPlugins,afterResolvers,
+    // entryOption
     if(compiler.hooks){
-      compiler.hooks.compilation.tap.bind(compiler.hooks.compilation, 'np-webpack-plugin')(function (compilation) {
-        // console.log('\ncompilation');
-        compilation.hooks.htmlWebpackPluginAlterAssetTags.tapAsync.bind(compilation.hooks.htmlWebpackPluginAlterAssetTags, 'np-webpack-plugin')(
-          function (htmlPluginData, callback) {
-            // console.log(htmlPluginData);
+      compiler.hooks.make.tapAsync('np-webpack-plugin',function(compilation,callback){
+        // compilation有如下的这些属性
+        // _pluginCompat,hooks,name,compiler,resolverFactory,inputFileSystem,
+        // requestShortener,options,outputOptions,bail,profile,performance,
+        // mainTemplate,chunkTemplate,hotUpdateChunkTemplate,runtimeTemplate,
+        // moduleTemplates,semaphore,entries,_preparedEntrypoints,entrypoints,
+        // chunks,chunkGroups,namedChunkGroups,namedChunks,modules,_modules,
+        // cache,records,nextFreeModuleIndex,nextFreeModuleIndex2,
+        // additionalChunkAssets,assets,errors,warnings,children,
+        // dependencyFactories,dependencyTemplates,childrenCounters,
+        // usedChunkIds,usedModuleIds,fileTimestamps,contextTimestamps,
+        // compilationDependencies,_buildingModules,_rebuildingModules,
+        // fullHash,hash,fileDependencies,contextDependencies,missingDependencies
+        console.log('make');
+        // console.log(callback.toString())
+        callback();
+      });
+      compiler.hooks.compilation.tap('np-webpack-plugin',function (compilation) {
+        compilation.hooks.htmlWebpackPluginAlterAssetTags.tapAsync('np-webpack-plugin',function (htmlPluginData, callback) {
             var result = htmlPluginData;
             callback(null, result);
           }
         );
       });
-      // compiler.hooks中有如下这些属性
-      // shouldEmit,done,additionalPass,beforeRun,run,emit,afterEmit,
-      // thisCompilation,compilation,normalModuleFactory,contextModuleFactory,
-      // beforeCompile,compile,make,afterCompile,watchRun,failed,invalid,
-      // watchClose,environment,afterEnvironment,afterPlugins,afterResolvers,
-      // entryOption
-      compiler.hooks.emit.tapAsync.bind(compiler.hooks.emit, 'np-webpack-plugin')(function(compilation,callback){
-          // console.log('\nemit');
+      compiler.hooks.emit.tapAsync('np-webpack-plugin',function(compilation,callback){
+          // CONSOLEKEYS(compilation.assets);
           var source = compilation.assets['index.html'].source();
           compilation.assets['index.html'].source = function(){
             var npSource = source.replace(/<np.*?>(.*?)<\/np>/g,"this is niepan component");
-            // console.log(npSource)
             return npSource;
           }
-          // CONSOLEKEYS(compilation);
-          //
-          // _pluginCompat,hooks,name,compiler,resolverFactory,inputFileSystem,
-          // requestShortener,options,outputOptions,bail,profile,performance,
-          // mainTemplate,chunkTemplate,hotUpdateChunkTemplate,runtimeTemplate,
-          // moduleTemplates,semaphore,entries,_preparedEntrypoints,entrypoints,
-          // chunks,chunkGroups,namedChunkGroups,namedChunks,modules,_modules,
-          // cache,records,nextFreeModuleIndex,nextFreeModuleIndex2,
-          // additionalChunkAssets,assets,errors,warnings,children,
-          // dependencyFactories,dependencyTemplates,childrenCounters,
-          // usedChunkIds,usedModuleIds,fileTimestamps,contextTimestamps,
-          // compilationDependencies,_buildingModules,_rebuildingModules,
-          // fullHash,hash,fileDependencies,contextDependencies,missingDependencies
-
-
-          // console.log(compilation.assets);
+          // compilation.assets的结构如下:
           //
           // {
           //   'app.js': CachedSource {
