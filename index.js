@@ -1,6 +1,7 @@
 /**
  * NiepanPlugin depends on html-webpack-plugin
  */
+const fs = require('fs');
 function CONSOLEKEYS(o){
   console.log("\n"+Object.keys(o).join("\n"))
 }
@@ -46,8 +47,11 @@ class NiepanPlugin{
           // CONSOLEKEYS(compilation.assets);
           var source = compilation.assets['index.html'].source();
           compilation.assets['index.html'].source = function(){
-            var npSource = source.replace(/<np.*?>(.*?)<\/np>/g,"this is niepan component");
-            return npSource;
+            var newSource = source.replace(/<np.*?>(.*?)<\/np>/g,function(match,p){
+              var data = fs.readFileSync(p);
+              return data;
+            });
+            return newSource;
           }
           // compilation.assets的结构如下:
           //
