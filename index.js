@@ -1,8 +1,8 @@
 /**
  * NiepanPlugin depends on html-webpack-plugin
  */
-import utils from './utils.js'
-const fs = require('fs');
+// const fs = require('fs');
+const utils = require('./utils.js');
 function CONSOLEKEYS(o){
   console.log("\n"+Object.keys(o).join("\n"))
 }
@@ -47,10 +47,9 @@ class NiepanPlugin{
       compiler.hooks.emit.tapAsync('np-webpack-plugin',function(compilation,callback){
           // CONSOLEKEYS(compilation.assets);
           var source = compilation.assets['index.html'].source();
-
-          compilation.assets['index.html'].source = utils.replace(source);
-          //   return newSource;
-          // }
+          compilation.assets['index.html'].source = function(){
+            return utils.replace(source)
+          };
           // compilation.assets的结构如下:
           //
           // {

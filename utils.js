@@ -5,11 +5,11 @@ let styles = {};
 let scripts = {};
 let index = 0;
 function add(){
-  return `np-${++index}`;
+  return `np_${++index}`;
 }
 
 function template(data,id){
-  const reg = new RegExp("<template[\s\S]*?>[\s\S]*?<([a-zA-Z]*)([\s\S]*?)>([\s\S]*?)<\/template>");
+  const reg = /<template[\s\S]*?>[\s\S]*?<([a-zA-Z]*)([\s\S]*?)>([\s\S]*?)<\/template>/;
   if(reg.test(data)){
     var list = reg.exec(data);
     var tag = list[1];
@@ -22,7 +22,7 @@ function template(data,id){
 }
 
 function style(data,id){
-  const reg = new RegExp("([\s\S]*?)<style[\s\S]*?>([\s\S]*?)<\/style>([\s\S]*?)");
+  const reg = /^([\s\S]*?)<style[\s\S]*?>([\s\S]*?)<\/style>([\s\S]*?)$/;
   if(reg.test(data)){
     var list = data.match(reg);
     styles[id] = list[2];
@@ -32,7 +32,7 @@ function style(data,id){
 }
 
 function script(data,id){
-  const reg = new RegExp("([\s\S]*?)<script[\s\S]*?>([\s\S]*?)<\/script>([\s\S]*?)");
+  const reg = /^([\s\S]*?)<script[\s\S]*?>([\s\S]*?)<\/script>([\s\S]*?)$/;
   if(reg.test(data)){
     var list = data.match(reg);
     scripts[id] = list[2];
@@ -42,16 +42,24 @@ function script(data,id){
 }
 
 function replace (source){
-  return  source.replace(/<inline.*?>(.*?)<\/inline>/g,function(match,path){
-            var buffer = fs.readFileSync(path);
-            return replace(buffer);
-          }).replace(/<np.*?>(.*?\.np).*?<\/np>/g,function(match,path){
-            var buffer = fs.readFileSync(path);
-            var id = add();
-            buffer = style(buffer,id);
-            buffer = script(buffer,id);
-            return template(buffer,id);
-          });
+  let npsource = source;
+  if(/<inline.*?>(.*?)<\/inline>/.test(npsource)){
+    npsource = npsource.replace(/<inline.*?>(.*?)<\/inline>/g,function(match,path){
+      var buffer = fs.readFileSync(path);
+      return replace(buffer);
+    });
+  }
+  if(/<np.*?>(.*?\.np).*?<\/np>/.test(npsource)){
+    npsource = npsource.replace(/<np.*?>(.*?\.np).*?<\/np>/g,function(match,path){
+        let buffer = fs.readFileSync(path);
+        buffer = buffer.toString();
+        let id = add();
+        buffer = style(buffer,id);
+        buffer = script(buffer,id);
+        return template(buffer,id);
+      });
+  }
+  return npsource;
 }
 
 const utils = {
@@ -59,6 +67,7 @@ const utils = {
   template,
   script,
   style,
+  replace,
   source:{
     templates,
     scripts,
