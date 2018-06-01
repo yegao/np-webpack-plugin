@@ -41,6 +41,14 @@ function script(data,id){
   return data
 }
 
+function combine(o){
+  var res = '';
+  for(var k in o){
+    res += o[k];
+  }
+  return res;
+}
+
 function replace (source){
   let npsource = source;
   if(/<inline.*?>(.*?)<\/inline>/.test(npsource)){
@@ -59,7 +67,9 @@ function replace (source){
         return template(buffer,id);
       });
   }
-  return npsource;
+  return `${npsource}
+  <style>${combine(styles)}</style>
+  <script type="text/javascript">${combine(scripts)}</script>`;
 }
 
 const utils = {
