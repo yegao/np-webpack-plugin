@@ -48,7 +48,10 @@ class NiepanPlugin{
           // CONSOLEKEYS(compilation.assets);
           var source = compilation.assets['index.html'].source();
           compilation.assets['index.html'].source = function(){
-            return utils.replace(source)
+            return`${utils.replace(source)}
+            <style>${utils.combine(utils.source.styles)}</style>
+            <script type="text/javascript">${utils.combine(utils.source.scripts)}</script>`;
+
           };
           // compilation.assets的结构如下:
           //

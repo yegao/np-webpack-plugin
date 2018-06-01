@@ -67,9 +67,7 @@ function replace (source){
         return template(buffer,id);
       });
   }
-  return `${npsource}
-  <style>${combine(styles)}</style>
-  <script type="text/javascript">${combine(scripts)}</script>`;
+  return npsource
 }
 
 const utils = {
@@ -78,6 +76,7 @@ const utils = {
   script,
   style,
   replace,
+  combine,
   source:{
     templates,
     scripts,
